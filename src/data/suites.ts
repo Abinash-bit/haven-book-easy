@@ -24,7 +24,14 @@ export const suites: Suite[] = [
       'Air conditioning'
     ],
     image: suite1Image,
-    gallery: [suite1Image, suite2Image, suite3Image]
+    gallery: [
+      { src: suite1Image, alt: 'Bedroom with ocean view' },
+      { src: suite2Image, alt: 'Luxury bathroom with soaking tub' },
+      { src: suite3Image, alt: 'Kitchen and dining area' },
+      { src: suite4Image, alt: 'Living room with balcony access' },
+      { src: suite5Image, alt: 'Private balcony with ocean view' },
+      { src: suite6Image, alt: 'Spa bathroom with dual vanities' }
+    ]
   },
   {
     id: 'suite-2',
@@ -43,7 +50,14 @@ export const suites: Suite[] = [
       'Climate control'
     ],
     image: suite2Image,
-    gallery: [suite2Image, suite1Image, suite4Image]
+    gallery: [
+      { src: suite2Image, alt: 'Garden terrace bedroom' },
+      { src: suite1Image, alt: 'Private garden terrace' },
+      { src: suite4Image, alt: 'Spa-inspired bathroom' },
+      { src: suite3Image, alt: 'Kitchenette with essentials' },
+      { src: suite5Image, alt: 'Garden view from terrace' },
+      { src: suite6Image, alt: 'Walk-in shower with rainfall head' }
+    ]
   },
   {
     id: 'suite-3',
@@ -62,7 +76,14 @@ export const suites: Suite[] = [
       'Heated floors'
     ],
     image: suite3Image,
-    gallery: [suite3Image, suite5Image, suite6Image]
+    gallery: [
+      { src: suite3Image, alt: 'Mountain view bedroom' },
+      { src: suite5Image, alt: 'Separate living area with sofa bed' },
+      { src: suite6Image, alt: 'Jetted tub with mountain views' },
+      { src: suite1Image, alt: 'King bed with mountain views' },
+      { src: suite2Image, alt: 'Full mini-bar service area' },
+      { src: suite4Image, alt: 'Premium entertainment system' }
+    ]
   },
   {
     id: 'suite-4',
@@ -81,7 +102,14 @@ export const suites: Suite[] = [
       'Individual climate control'
     ],
     image: suite4Image,
-    gallery: [suite4Image, suite2Image, suite1Image]
+    gallery: [
+      { src: suite4Image, alt: 'Serenity bedroom with garden views' },
+      { src: suite2Image, alt: 'Spa-inspired bathroom' },
+      { src: suite1Image, alt: 'Private reading nook' },
+      { src: suite3Image, alt: 'Coffee and tea station' },
+      { src: suite5Image, alt: 'Garden view from window' },
+      { src: suite6Image, alt: 'Individual climate control panel' }
+    ]
   },
   {
     id: 'suite-5',
@@ -100,7 +128,14 @@ export const suites: Suite[] = [
       'Private pool access'
     ],
     image: suite5Image,
-    gallery: [suite5Image, suite3Image, suite4Image]
+    gallery: [
+      { src: suite5Image, alt: 'Poolside paradise bedroom' },
+      { src: suite3Image, alt: 'Two full bathrooms' },
+      { src: suite4Image, alt: 'Kitchenette with dining area' },
+      { src: suite1Image, alt: 'King bed plus queen sofa bed' },
+      { src: suite2Image, alt: 'Pool and resort views' },
+      { src: suite6Image, alt: 'Multiple entertainment areas' }
+    ]
   },
   {
     id: 'suite-6',
@@ -119,6 +154,13 @@ export const suites: Suite[] = [
       'Personalized climate control'
     ],
     image: suite6Image,
-    gallery: [suite6Image, suite1Image, suite5Image]
+    gallery: [
+      { src: suite6Image, alt: 'Sunset vista bedroom' },
+      { src: suite1Image, alt: 'Private sunset-viewing balcony' },
+      { src: suite5Image, alt: 'Luxurious bathroom with dual vanities' },
+      { src: suite2Image, alt: 'Premium mini-bar area' },
+      { src: suite3Image, alt: 'Sunset view from balcony' },
+      { src: suite4Image, alt: 'High-end entertainment system' }
+    ]
   }
 ];

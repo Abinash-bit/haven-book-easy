@@ -8,6 +8,7 @@ import Landing from "./pages/Landing";
 import SuiteDetail from "./pages/SuiteDetail";
 import Checkout from "./pages/Checkout";
 import Confirmation from "./pages/Confirmation";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
             <Route path="/suite/:id" element={<SuiteDetail />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/confirmation" element={<Confirmation />} />
+            <Route path="/auth" element={<Auth />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

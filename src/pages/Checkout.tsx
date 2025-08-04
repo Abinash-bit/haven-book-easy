@@ -3,7 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ChevronLeft, CreditCard, Calendar, Users } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ChevronLeft, CreditCard, Calendar, Users, Shield, CheckCircle } from 'lucide-react';
 import { useBooking } from '@/contexts/BookingContext';
 import { cn } from '@/lib/utils';
 
@@ -11,6 +15,8 @@ const Checkout = () => {
   const navigate = useNavigate();
   const { booking, updateBooking } = useBooking();
   
+  const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'paypal'>('stripe');
+  const [isProcessing, setIsProcessing] = useState(false);
   const [formData, setFormData] = useState({
     guestName: booking.guestName,
     guestEmail: booking.guestEmail,
@@ -59,40 +65,82 @@ const Checkout = () => {
       newErrors.guestPhone = 'Phone number is required';
     }
 
-    if (!formData.cardNumber.trim()) {
-      newErrors.cardNumber = 'Card number is required';
-    } else if (formData.cardNumber.replace(/\s/g, '').length < 13) {
-      newErrors.cardNumber = 'Please enter a valid card number';
-    }
+    // Only validate card details if Stripe is selected
+    if (paymentMethod === 'stripe') {
+      if (!formData.cardNumber.trim()) {
+        newErrors.cardNumber = 'Card number is required';
+      } else if (formData.cardNumber.replace(/\s/g, '').length < 13) {
+        newErrors.cardNumber = 'Please enter a valid card number';
+      }
 
-    if (!formData.expiryDate.trim()) {
-      newErrors.expiryDate = 'Expiry date is required';
-    } else if (!/^\d{2}\/\d{2}$/.test(formData.expiryDate)) {
-      newErrors.expiryDate = 'Please enter a valid expiry date (MM/YY)';
-    }
+      if (!formData.expiryDate.trim()) {
+        newErrors.expiryDate = 'Expiry date is required';
+      } else if (!/^\d{2}\/\d{2}$/.test(formData.expiryDate)) {
+        newErrors.expiryDate = 'Please enter a valid expiry date (MM/YY)';
+      }
 
-    if (!formData.cvc.trim()) {
-      newErrors.cvc = 'CVC is required';
-    } else if (formData.cvc.length < 3) {
-      newErrors.cvc = 'Please enter a valid CVC';
+      if (!formData.cvc.trim()) {
+        newErrors.cvc = 'CVC is required';
+      } else if (formData.cvc.length < 3) {
+        newErrors.cvc = 'Please enter a valid CVC';
+      }
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleStripePayment = async () => {
+    setIsProcessing(true);
     
-    if (validateForm()) {
+    try {
+      // Simulate Stripe payment processing
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
       updateBooking({
         guestName: formData.guestName,
         guestEmail: formData.guestEmail,
         guestPhone: formData.guestPhone,
       });
       
-      // In a real app, you would process payment here
       navigate('/confirmation');
+    } catch (error) {
+      console.error('Payment failed:', error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handlePayPalPayment = async () => {
+    setIsProcessing(true);
+    
+    try {
+      // Simulate PayPal payment processing
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      updateBooking({
+        guestName: formData.guestName,
+        guestEmail: formData.guestEmail,
+        guestPhone: formData.guestPhone,
+      });
+      
+      navigate('/confirmation');
+    } catch (error) {
+      console.error('Payment failed:', error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (validateForm()) {
+      if (paymentMethod === 'stripe') {
+        handleStripePayment();
+      } else {
+        handlePayPalPayment();
+      }
     }
   };
 
@@ -143,19 +191,22 @@ const Checkout = () => {
             <div className="space-y-8">
               <form onSubmit={handleSubmit} className="space-y-8">
                 {/* Guest Information */}
-                <div className="bg-card rounded-xl p-6 border">
-                  <h2 className="text-xl font-serif mb-6">Guest Information</h2>
-                  <div className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-xl font-serif">Guest Information</CardTitle>
+                    <CardDescription>
+                      Please provide your contact details for the reservation
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
                     <div>
-                      <label htmlFor="guestName" className="block text-sm font-medium mb-2">
-                        Full Name
-                      </label>
+                      <Label htmlFor="guestName">Full Name</Label>
                       <Input
                         id="guestName"
                         type="text"
                         value={formData.guestName}
                         onChange={(e) => handleInputChange('guestName', e.target.value)}
-                        className={cn("resort-input", errors.guestName && "border-destructive")}
+                        className={cn("resort-input mt-2", errors.guestName && "border-destructive")}
                         placeholder="Enter your full name"
                       />
                       {errors.guestName && (
@@ -164,15 +215,13 @@ const Checkout = () => {
                     </div>
 
                     <div>
-                      <label htmlFor="guestEmail" className="block text-sm font-medium mb-2">
-                        Email Address
-                      </label>
+                      <Label htmlFor="guestEmail">Email Address</Label>
                       <Input
                         id="guestEmail"
                         type="email"
                         value={formData.guestEmail}
                         onChange={(e) => handleInputChange('guestEmail', e.target.value)}
-                        className={cn("resort-input", errors.guestEmail && "border-destructive")}
+                        className={cn("resort-input mt-2", errors.guestEmail && "border-destructive")}
                         placeholder="Enter your email"
                       />
                       {errors.guestEmail && (
@@ -181,102 +230,173 @@ const Checkout = () => {
                     </div>
 
                     <div>
-                      <label htmlFor="guestPhone" className="block text-sm font-medium mb-2">
-                        Phone Number
-                      </label>
+                      <Label htmlFor="guestPhone">Phone Number</Label>
                       <Input
                         id="guestPhone"
                         type="tel"
                         value={formData.guestPhone}
                         onChange={(e) => handleInputChange('guestPhone', e.target.value)}
-                        className={cn("resort-input", errors.guestPhone && "border-destructive")}
+                        className={cn("resort-input mt-2", errors.guestPhone && "border-destructive")}
                         placeholder="Enter your phone number"
                       />
                       {errors.guestPhone && (
                         <p className="text-sm text-destructive mt-1">{errors.guestPhone}</p>
                       )}
                     </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
+
+                {/* Payment Method Selection */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-xl font-serif">Payment Method</CardTitle>
+                    <CardDescription>
+                      Choose your preferred payment method
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <RadioGroup
+                      value={paymentMethod}
+                      onValueChange={(value) => setPaymentMethod(value as 'stripe' | 'paypal')}
+                      className="space-y-4"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="stripe" id="stripe" />
+                        <Label htmlFor="stripe" className="flex items-center gap-2 cursor-pointer">
+                          <CreditCard className="w-4 h-4" />
+                          Credit/Debit Card (Stripe)
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="paypal" id="paypal" />
+                        <Label htmlFor="paypal" className="flex items-center gap-2 cursor-pointer">
+                          <div className="w-4 h-4 bg-blue-600 rounded-sm flex items-center justify-center">
+                            <span className="text-white text-xs font-bold">P</span>
+                          </div>
+                          PayPal
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                  </CardContent>
+                </Card>
 
                 {/* Payment Information */}
-                <div className="bg-card rounded-xl p-6 border">
-                  <div className="flex items-center gap-2 mb-6">
-                    <CreditCard className="w-5 h-5 text-primary" />
-                    <h2 className="text-xl font-serif">Payment Information</h2>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <label htmlFor="cardNumber" className="block text-sm font-medium mb-2">
-                        Card Number
-                      </label>
-                      <Input
-                        id="cardNumber"
-                        type="text"
-                        value={formData.cardNumber}
-                        onChange={(e) => handleInputChange('cardNumber', formatCardNumber(e.target.value))}
-                        className={cn("resort-input", errors.cardNumber && "border-destructive")}
-                        placeholder="1234 5678 9012 3456"
-                        maxLength={19}
-                      />
-                      {errors.cardNumber && (
-                        <p className="text-sm text-destructive mt-1">{errors.cardNumber}</p>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
+                {paymentMethod === 'stripe' && (
+                  <Card>
+                    <CardHeader>
+                      <div className="flex items-center gap-2">
+                        <CreditCard className="w-5 h-5 text-primary" />
+                        <CardTitle className="text-xl font-serif">Card Information</CardTitle>
+                      </div>
+                      <CardDescription>
+                        Your payment information is secure and encrypted
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
                       <div>
-                        <label htmlFor="expiryDate" className="block text-sm font-medium mb-2">
-                          Expiry Date
-                        </label>
+                        <Label htmlFor="cardNumber">Card Number</Label>
                         <Input
-                          id="expiryDate"
+                          id="cardNumber"
                           type="text"
-                          value={formData.expiryDate}
-                          onChange={(e) => handleInputChange('expiryDate', formatExpiry(e.target.value))}
-                          className={cn("resort-input", errors.expiryDate && "border-destructive")}
-                          placeholder="MM/YY"
-                          maxLength={5}
+                          value={formData.cardNumber}
+                          onChange={(e) => handleInputChange('cardNumber', formatCardNumber(e.target.value))}
+                          className={cn("resort-input mt-2", errors.cardNumber && "border-destructive")}
+                          placeholder="1234 5678 9012 3456"
+                          maxLength={19}
                         />
-                        {errors.expiryDate && (
-                          <p className="text-sm text-destructive mt-1">{errors.expiryDate}</p>
+                        {errors.cardNumber && (
+                          <p className="text-sm text-destructive mt-1">{errors.cardNumber}</p>
                         )}
                       </div>
 
-                      <div>
-                        <label htmlFor="cvc" className="block text-sm font-medium mb-2">
-                          CVC
-                        </label>
-                        <Input
-                          id="cvc"
-                          type="text"
-                          value={formData.cvc}
-                          onChange={(e) => handleInputChange('cvc', e.target.value.replace(/\D/g, ''))}
-                          className={cn("resort-input", errors.cvc && "border-destructive")}
-                          placeholder="123"
-                          maxLength={4}
-                        />
-                        {errors.cvc && (
-                          <p className="text-sm text-destructive mt-1">{errors.cvc}</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="expiryDate">Expiry Date</Label>
+                          <Input
+                            id="expiryDate"
+                            type="text"
+                            value={formData.expiryDate}
+                            onChange={(e) => handleInputChange('expiryDate', formatExpiry(e.target.value))}
+                            className={cn("resort-input mt-2", errors.expiryDate && "border-destructive")}
+                            placeholder="MM/YY"
+                            maxLength={5}
+                          />
+                          {errors.expiryDate && (
+                            <p className="text-sm text-destructive mt-1">{errors.expiryDate}</p>
+                          )}
+                        </div>
 
-                <Button type="submit" className="w-full resort-btn-primary text-lg py-4">
-                  Confirm & Pay ${booking.totalPrice}
+                        <div>
+                          <Label htmlFor="cvc">CVC</Label>
+                          <Input
+                            id="cvc"
+                            type="text"
+                            value={formData.cvc}
+                            onChange={(e) => handleInputChange('cvc', e.target.value.replace(/\D/g, ''))}
+                            className={cn("resort-input mt-2", errors.cvc && "border-destructive")}
+                            placeholder="123"
+                            maxLength={4}
+                          />
+                          {errors.cvc && (
+                            <p className="text-sm text-destructive mt-1">{errors.cvc}</p>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {paymentMethod === 'paypal' && (
+                  <Card>
+                    <CardHeader>
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 bg-blue-600 rounded-sm flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">P</span>
+                        </div>
+                        <CardTitle className="text-xl font-serif">PayPal Payment</CardTitle>
+                      </div>
+                      <CardDescription>
+                        You'll be redirected to PayPal to complete your payment
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div className="flex items-center gap-2 text-blue-800">
+                          <Shield className="w-4 h-4" />
+                          <span className="text-sm font-medium">Secure Payment</span>
+                        </div>
+                        <p className="text-sm text-blue-700 mt-1">
+                          Your payment will be processed securely through PayPal's trusted platform.
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                <Button 
+                  type="submit" 
+                  className="w-full resort-btn-primary text-lg py-4"
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Processing Payment...
+                    </div>
+                  ) : (
+                    `Confirm & Pay $${booking.totalPrice}`
+                  )}
                 </Button>
               </form>
             </div>
 
             {/* Right Column - Booking Summary */}
             <div className="lg:sticky lg:top-8">
-              <div className="bg-card rounded-xl p-6 border">
-                <h2 className="text-xl font-serif mb-6">Booking Summary</h2>
-                
-                <div className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-xl font-serif">Booking Summary</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
                   <div className="aspect-[4/3] overflow-hidden rounded-lg">
                     <img
                       src={booking.suite.image}
@@ -319,8 +439,16 @@ const Checkout = () => {
                       <span>${booking.totalPrice}</span>
                     </div>
                   </div>
-                </div>
-              </div>
+
+                  {/* Security Badge */}
+                  <div className="border-t pt-4">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Shield className="w-4 h-4" />
+                      <span>SSL Encrypted Payment</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>

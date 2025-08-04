@@ -8,7 +8,10 @@ export interface Suite {
   description: string;
   amenities: string[];
   image: string;
-  gallery: string[];
+  gallery: Array<{
+    src: string;
+    alt: string;
+  }>;
 }
 
 export interface BookingDetails {

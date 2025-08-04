@@ -78,8 +78,8 @@ const SuiteDetail = () => {
           <div className="space-y-4">
             <div className="aspect-[4/3] overflow-hidden rounded-xl">
               <img
-                src={suite.gallery[selectedImage]}
-                alt={suite.name}
+                src={suite.gallery[selectedImage].src}
+                alt={suite.gallery[selectedImage].alt}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -96,8 +96,8 @@ const SuiteDetail = () => {
                   )}
                 >
                   <img
-                    src={img}
-                    alt={`${suite.name} ${index + 1}`}
+                    src={img.src}
+                    alt={img.alt}
                     className="w-full h-full object-cover"
                   />
                 </button>
